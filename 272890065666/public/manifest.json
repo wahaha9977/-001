@@ -1,0 +1,21 @@
+{
+  "name": "宠兽收集",
+  "short_name": "宠兽收集",
+  "description": "宠兽收集与养成游戏",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "https://space.coze.cn/api/coze_space/gen_image?image_size=square_hd&prompt=Pet%20collection%20logo%2C%20cartoon%20style%2C%20vibrant%20colors&sign=7756711ac6fac48e32fb27787a414a86",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://space.coze.cn/api/coze_space/gen_image?image_size=square_hd&prompt=Pet%20collection%20logo%2C%20cartoon%20style%2C%20vibrant%20colors&sign=7756711ac6fac48e32fb27787a414a86",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

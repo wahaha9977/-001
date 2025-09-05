@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>宠兽收集 - 图鉴</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" crossorigin="anonymous" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Tailwind配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#3b82f6',
+            secondary: '#8b5cf6',
+            accent: '#ec4899',
+            neutral: '#64748b',
+            "neutral-content": '#f8fafc',
+            "base-100": '#ffffff',
+            "base-200": '#f1f5f9',
+            "base-300": '#e2e8f0',
+            "base-content": '#1e293b',
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .text-shadow {
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .card-hover {
+        @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 font-inter min-h-screen">
+  <!-- 顶部导航栏 -->
+  <header class="sticky top-0 z-30 bg-white shadow-sm border-b border-gray-100">
+    <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+      <button 
+        id="backButton"
+        class="flex items-center text-gray-700 hover:text-blue-600 transition-colors"
+      >
+        <i class="fa-solid fa-arrow-left mr-2"></i>
+        <span>返回</span>
+      </button>
+      
+      <h1 class="text-xl font-bold text-gray-900">宠兽图鉴</h1>
+      
+      <div class="text-sm text-gray-500">
+        已收集: <span id="collectedCount">0</span>/<span id="totalCount">0</span>
+      </div>
+    </div>
+  </header>
+  
+  <main class="container mx-auto px-4 py-6">
+    <!-- 搜索栏 -->
+    <div class="mb-6 max-w-2xl mx-auto">
+      <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <i class="fa-solid fa-search text-gray-400"></i>
+        </div>
+        
+        <input
+          id="searchInput"
+          type="text"
+          placeholder="搜索宠兽名称或描述..."
+          class="block w-full pl-10 pr-10 py-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+        />
+        
+        <button
+          id="clearSearchButton"
+          type="button"
+          class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-500 transition-colors hidden"
+        >
+          <i class="fa-solid fa-times-circle"></i>
+        </button>
+      </div>
+    </div>
+    
+    <div class="flex flex-col md:flex-row gap-6">
+      <!-- 筛选侧边栏 - 桌面视图 -->
+      <div class="hidden md:block w-64 flex-shrink-0">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div class="px-4 py-3 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="font-semibold text-gray-900">筛选条件</h3>
+            <button
+              id="resetFiltersButton"
+              class="text-sm text-blue-600 hover:text-blue-800 transition-colors"
+            >
+              重置筛选
+            </button>
+          </div>
+          
+          <!-- 类型筛选 -->
+          <div class="border-b border-gray-100">
+            <button
+              class="w-full px-4 py-3 text-left flex justify-between items-center"
+              onclick="toggleSection('types')"
+            >
+              <span class="font-medium text-gray-900">属性类型</span>
+              <i class="fa-solid transition-transform duration-300 fa-chevron-up" id="typesIcon"></i>
+            </button>
+            
+            <div id="typesSection" class="px-4 pb-3">
+              <div class="flex flex-wrap gap-2">
+                <button onclick="toggleType('火')" class="px-3 py-1.5 rounded-full text-sm transition-colors bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100">火</button>
+                <button onclick="toggleType('水')" class="px-3 py-1.5 rounded-full text-sm transition-colors bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100">水</button>
+                <button onclick="toggleType('草')" class="px-3 py-1.5 rounded-full text-sm transition-colors bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100">草</button>
+                <button onclick="toggleType('电')" class="px-3 py-1.5 rounded-full text-sm transition-colors bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100">电</button>
+                <button onclick="toggleType('冰')" class="px-3 py-1.5 rounded-full text-sm transition-colors bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100">冰</button>
+                <button onclick="toggleType('格斗')" class="px-3 py-1.5 rounded-full text-sm transition-colors bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100">格斗</button>
+                <button onclick="toggleType('毒')" class="px-3 py-1.5 rounded-full text-sm transition-colors bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100">毒</button>
+                <button onclick="toggleType('地面')" class="px-3 py-1.5 rounded-full text-sm transition-colors bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100">地面</button>
+                <button onclick="toggleType('飞行')" class="px-3 py-1.5 rounded-full text-sm transition-colors bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100">飞行</button>
+                <button onclick="toggleType('普通')" class="px-3 py-1.5 rounded-full text-sm transition-colors bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100">普通</button>
+                <button onclick="toggleType('暗')" class="px-3 py-1.5 rounded-full text-sm transition-colors bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100">暗</button>
+                <button onclick="toggleType('龙')" class="px-3 py-1.5 rounded-full text-sm transition-colors bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100">龙</button>
+                <button onclick="toggleType('钢')" class="px-3 py-1.5 rounded-full text-sm transition-colors bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100">钢</button>
+                <button onclick="toggleType('妖精')" class="px-3 py-1.5 rounded-full text-sm transition-colors bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100">妖精</button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 稀有度筛选 -->
+          <div class="border-b border-gray-100">
+            <button
+              class="w-full px-4 py-3 text-left flex justify-between items-center"
+              onclick="toggleSection('rarities')"
+            >
+              <span class="font-medium text-gray-900">稀有度</span>
+              <i class="fa-solid transition-transform duration-300 fa-chevron-up" id="raritiesIcon"></i>
+            </button>
+            
+            <div id="raritiesSection" class="px-4 pb-3">
+              <div class="space-y-2">
+                <label class="flex items-center">
+                  <input type="checkbox" onclick="toggleRarity('common')" class="rounded text-blue-600 focus:ring-blue-500" />
+                  <span class="ml-2 text-sm bg-gray-100 text-gray-800 px-2 py-0.5 rounded">普通</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" onclick="toggleRarity('uncommon')" class="rounded text-blue-600 focus:ring-blue-500" />
+                  <span class="ml-2 text-sm bg-green-100 text-green-800 px-2 py-0.5 rounded">高级</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" onclick="toggleRarity('rare')" class="rounded text-blue-600 focus:ring-blue-500" />
+                  <span class="ml-2 text-sm bg-blue-100 text-blue-800 px-2 py-0.5 rounded">稀有</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" onclick="toggleRarity('epic')" class="rounded text-blue-600 focus:ring-blue-500" />
+                  <span class="ml-2 text-sm bg-purple-100 text-purple-800 px-2 py-0.5 rounded">史诗</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" onclick="toggleRarity('legendary')" class="rounded text-blue-600 focus:ring-blue-500" />
+                  <span class="ml-2 text-sm bg-amber-100 text-amber-800 px-2 py-0.5 rounded">传说</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" onclick="toggleRarity('special')" class="rounded text-blue-600 focus:ring-blue-500" />
+                  <span class="ml-2 text-sm bg-pink-100 text-pink-800 px-2 py-0.5 rounded">特殊</span>
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 其他筛选选项 -->
+          <div>
+            <button
+              class="w-full px-4 py-3 text-left flex justify-between items-center"
+              onclick="toggleSection('other')"
+            >
+              <span class="font-medium text-gray-900">其他选项</span>
+              <i class="fa-solid transition-transform duration-300 fa-chevron-up" id="otherIcon"></i>
+            </button>
+            
+            <div id="otherSection" class="px-4 pb-3">
+              <label class="flex items-center">
+                <input type="checkbox" id="showCollectedOnly" onclick="toggleCollectedFilter()" class="rounded text-blue-600 focus:ring-blue-500" />
+                <span class="ml-2 text-sm text-gray-700">只显示已收集</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 筛选栏 - 移动视图 -->
+      <div class="md:hidden mb-4">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div class="px-4 py-3 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="font-semibold text-gray-900">筛选条件</h3>
+            <button
+              id="mobileResetFiltersButton"
+              class="text-sm text-blue-600 hover:text-blue-800 transition-colors"
+            >
+              重置筛选
+            </button>
+          </div>
+          
+          <!-- 移动视图的筛选内容 -->
+          <div class="px-4 py-3">
+            <div class="mb-4">
+              <h4 class="font-medium text-gray-900 mb-2">属性类型</h4>
+              <div class="flex flex-wrap gap-2">
+                <button onclick="toggleType('火')" class="px-3 py-1.5 rounded-full text-sm transition-colors bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100">火</button>
+                <button onclick="toggleType('水')" class="px-3 py-1.5 rounded-full text-sm transition-colors bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100">水</button>
+                <button onclick="toggleType('草')" class="px-3 py-1.5 rounded-full text-sm transition-colors bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100">草</button>
+                <button onclick="toggleType('电')" class="px-3 py-1.5 rounded-full text-sm transition-colors bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100">电</button>
+                <button onclick="toggleType('冰')" class="px-3 py-1.5 rounded-full text-sm transition-colors bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100">冰</button>
+                <button onclick="toggleType('格斗')" class="px-3 py-1.5 rounded-full text-sm transition-colors bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100">格斗</button>
+              </div>
+            </div>
+            
+            <div class="mb-4">
+              <h4 class="font-medium text-gray-900 mb-2">稀有度</h4>
+              <div class="space-y-2">
+                <label class="flex items-center">
+                  <input type="checkbox" onclick="toggleRarity('common')" class="rounded text-blue-600 focus:ring-blue-500" />
+                  <span class="ml-2 text-sm bg-gray-100 text-gray-800 px-2 py-0.5 rounded">普通</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" onclick="toggleRarity('uncommon')" class="rounded text-blue-600 focus:ring-blue-500" />
+                  <span class="ml-2 text-sm bg-green-100 text-green-800 px-2 py-0.5 rounded">高级</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" onclick="toggleRarity('rare')" class="rounded text-blue-600 focus:ring-blue-500" />
+                  <span class="ml-2 text-sm bg-blue-100 text-blue-800 px-2 py-0.5 rounded">稀有</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" onclick="toggleRarity('epic')" class="rounded text-blue-600 focus:ring-blue-500" />
+                  <span class="ml-2 text-sm bg-purple-100 text-purple-800 px-2 py-0.5 rounded">史诗</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" onclick="toggleRarity('legendary')" class="rounded text-blue-600 focus:ring-blue-500" />
+                  <span class="ml-2 text-sm bg-amber-100 text-amber-800 px-2 py-0.5 rounded">传说</span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="mb-4">
+              <label class="flex items-center">
+                <input type="checkbox" id="mobileShowCollectedOnly" onclick="toggleCollectedFilter()" class="rounded text-blue-600 focus:ring-blue-500" />
+                <span class="ml-2 text-sm text-gray-700">只显示已收集</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 宠兽列表 -->
+      <div class="flex-1">
+        <!-- 结果统计和筛选标签 -->
+        <div class="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div class="text-sm text-gray-600">
+            找到 <span id="filteredCount" class="font-semibold text-blue-600">0</span> 个结果
+          </div>
+          
+          <!-- 活跃筛选标签 - 桌面视图 -->
+          <div class="hidden md:flex flex-wrap gap-2" id="activeFilters">
+            <!-- 动态生成的筛选标签将显示在这里 -->
+          </div>
+        </div>
+        
+        <div id="clearFiltersButtonContainer">
+          <button id="clearAllFiltersButton" class="text-xs text-blue-600 hover:text-blue-800 hidden">
+            清除全部
+          </button>
+        </div>
+        
+        <!-- 宠兽网格 -->
+        <div id="petGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <!-- 宠兽卡片将通过JavaScript动态生成 -->
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- 页脚 -->
+  <footer class="bg-white border-t border-gray-200 py-6 mt-12">
+    <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
+      <p>宠兽图鉴 &copy; 2025 - 所有数据仅供参考</p>
+    </div>
+  </footer>
+  
+  <script>
+    // 宠兽数据
+    const petData = [
+      {
+        id: '1',
+        name: '火焰灵猫',
+        type: ['火', '普通'],
+        description: '火焰灵猫是一种生活在火山地区的神秘生物，它们的身体能自然产生热量，尾巴末端总是燃烧着不灭的火焰。它们性格活泼好动，对人类友好，是初学者理想的伙伴。',
+        imageUrl: 'https://space.coze.cn/api/coze_space/gen_image?image_size=square_hd&prompt=Fire%20cat%20monster%2C%20flaming%20tail%2C%20mystical%20eyes%2C%20vibrant%20colors%2C%20digital%20art&sign=e9d86b2836179e191ff929503c9b60c6',
+        attributes: {
+          strength: 65,
+          agility: 85,
+          intelligence: 70,
+          vitality: 60,
+          defense: 55
+        },
+        abilities: [
+          { name: '火焰冲击', description: '用燃烧的爪子攻击敌人，有几率造成烧伤效果' },
+          { name: '快速移动', description: '短时间内大幅提升移动速度' }
+        ],
+        habitat: '火山地区、热泉附近',
+        rarity: 'uncommon',
+        isCollected: true,
+        height: '0.8m',
+        weight: '12kg',
+        evolutionStage: 1,
+        evolutionTo: '2'
+      },
+      {
+        id: '2',
+        name: '烈焰狮王',
+        type: ['火', '格斗'],
+        description: '火焰灵猫的进化形态，拥有更强大的火焰力量和王者气质。鬃毛如同燃烧的火焰，吼声能震动山谷。只有被它认可的训练师才能获得它的忠诚。',
+        imageUrl: 'https://space.coze.cn/api/coze_space/gen_image?image_size=square_hd&prompt=Lion%20monster%20with%20flaming%20mane%2C%20royal%20appearance%2C%20powerful%20stance%2C%20digital%20art&sign=95d42ea60e8b6ec1f59ef0696c044e76',
+        attributes: {
+          strength: 90,
+          agility: 75,
+          intelligence: 80,
+          vitality: 85,
+          defense: 70
+        },
+        abilities: [
+          { name: '烈焰风暴', description: '释放火焰旋风攻击周围所有敌人' },
+          { name: '王者威严', description: '降低周围敌人的攻击和防御' },
+          { name: '火焰护甲', description: '用火焰包裹身体，提升防御并对攻击者造成伤害' }
+        ],
+        habitat: '活火山内部、熔岩地带',
+        rarity: 'rare',
+        isCollected: true,
+        height: '1.5m',
+        weight: '75kg',
+        evolutionStage: 2,
+        evolutionFrom: '1'
+      },
+      {
+        id: '3',
+        name: '水蓝海豚',
+        type: ['水'],
+        description: '生活在清澈海水中的友好宠兽，拥有流线型身体和高超的游泳技巧。它们能发出特殊的声波与同伴交流，对人类非常友善。',
+        imageUrl: 'https://space.coze.cn/api/coze_space/gen_image?image_size=square_hd&prompt=Blue%20dolphin%20monster%2C%20friendly%20expression%2C%20shiny%20scales%2C%20underwater%20background%2C%20digital%20art&sign=266724209ccb532f6a52ddc602d5ffe8',
+        attributes: {
+          strength: 55,
+          agility: 80,
+          intelligence: 90,
+          vitality: 75,
+          defense: 60
+        },
+        abilities: [
+          { name: '水炮', description: '喷射高压水流攻击敌人' },
+          { name: '治愈波动', description: '发出治愈声波，恢复自身或同伴的生命值' }
+        ],
+        habitat: '热带海洋、清澈海湾',
+        rarity: 'uncommon',
+        isCollected: true,
+        height: '1.2m',
+        weight: '45kg',
+        evolutionStage: 1,
+        evolutionTo: '4'
+      },
+      {
+        id: '4',
+        name: '潮汐鲸皇',
+        type: ['水', '龙'],
+        description: '水蓝海豚的进化形态，体型巨大，拥有控制水流的能力。传说它的出现会带来丰沛的雨水，被沿海居民视为祥瑞的象征。',
+        imageUrl: 'https://space.coze.cn/api/coze_space/gen_image?image_size=square_hd&prompt=Giant%20whale%20monster%2C%20water%20control%2C%20majestic%20appearance%2C%20ocean%20background%2C%20digital%20art&sign=32d39ce4441524d0fc501ed0d93d3f70',
+        attributes: {
+          strength: 85,
+          agility: 65,
+          intelligence: 100,
+          vitality: 120,
+          defense: 95
+        },
+        abilities: [
+          { name: '海啸', description: '召唤巨大海浪攻击所有敌人' },
+          { name: '海洋祝福', description: '给自己和所有队友都回复大量生命值并清除负面状态' },
+          { name: '水流屏障', description: '创造水之屏障，吸收伤害并反弹部分伤害给攻击者' }
+        ],
+        habitat: '深海区域、远洋海域',
+        rarity: 'legendary',
+        isCollected: false,
+        height: '10m',
+        weight: '5000kg',
+        evolutionStage: 2,
+        evolutionFrom: '3'
+      },
+      {
+        id: '5',
+        name: '绿叶松鼠',
+        type: ['草'],
+        description: '生活在森林中的小型宠兽，尾巴如同蓬松的绿叶，能进行简单的光合作用。性格活泼好动，喜欢收集闪亮的东西。',
+        imageUrl: 'https://space.coze.cn/api/coze_space/gen_image?image_size=square_hd&prompt=Squirrel%20monster%20with%20leaf%20tail%2C%20green%20fur%2C%20forest%20background%2C%20cute%20expression%2C%20digital%20art&sign=eef6e037ef03de4670729ef9eda49d58',
+        attributes: {
+          strength: 45,
+          agility: 90,
+          intelligence: 65,
+          vitality: 60,
+          defense: 50
+        },
+        abilities: [
+          { name: '叶片飞镖', description: '发射锋利的叶片攻击敌人' },
+          { name: '光合作用', description: '在阳光下缓慢恢复生命值' }
+        ],
+        habitat: '温带森林、公园树丛',
+        rarity: 'common',
+        isCollected: true,
+        height: '0.3m',
+        weight: '2kg',
+        evolutionStage: 1,
+        evolutionTo: '6'
+      },
+      {
+        id: '122',
+        name: 'Saber',
+        type: ['光', '剑'],
+        description: '来自遥远传说中的剑士宠兽，手持Excalibur圣剑，拥有无与伦比的剑技和高贵的品格。只能通过商店用金币购买，无法通过抽卡获得。',
+        imageUrl: 'https://lf-code-agent.coze.cn/obj/x-ai-cn/272890065666/attachment/20200412234350_vqlfm_20250904212426.jpg',
+        attributes: {
+          strength: 100,
+          agility: 90,
+          intelligence: 85,
+          vitality: 95,
+          defense: 80
+        },
+        abilities: [
+          { name: '王权斩', description: '对敌方单体造成大量伤害' },
+          { name: '圆桌誓言', description: '为我方全体回复大量生命值' },
+          { name: 'Excalibur!', description: '对敌方全体造成大量伤害' },
+          { name: '守护命运长夜', description: '我方全体角色在一回合内不受任何伤害' }
+        ],
+        habitat: '传说之国',
+        rarity: 'special',
+        isCollected: false,
+        height: '1.6m',
+        weight: '52kg',
+        evolutionStage: 1
+      }
+    ];
+    
+    // 全局筛选状态
+    let searchQuery = '';
+    let selectedTypes = [];
+    let selectedRarities = [];
+    let showCollectedOnly = false;
+    
+    // DOM元素
+    const petGrid = document.getElementById('petGrid');
+    const searchInput = document.getElementById('searchInput');
+    const clearSearchButton = document.getElementById('clearSearchButton');
+    const collectedCount = document.getElementById('collectedCount');
+    const totalCount = document.getElementById('totalCount');
+    const filteredCount = document.getElementById('filteredCount');
+    const activeFilters = document.getElementById('activeFilters');
+    const clearAllFiltersButton = document.getElementById('clearAllFiltersButton');
+    const resetFiltersButton = document.getElementById('resetFiltersButton');
+    const mobileResetFiltersButton = document.getElementById('mobileResetFiltersButton');
+    
+    // 初始化页面
+    function initPage() {
+      // 设置统计信息
+      totalCount.textContent = petData.length.toString();
+      
+      // 模拟从本地存储获取已收集状态
+      const savedCollected = localStorage.getItem('collectedPets');
+      const collectedIds = savedCollected ? JSON.parse(savedCollected) : [];
+      
+      // 更新宠兽数据的收集状态
+      const petsWithCollectionStatus = petData.map(pet => ({
+        ...pet,
+        isCollected: collectedIds.includes(pet.id)
+      }));
+      
+      // 计算已收集数量
+      const collectedPets = petsWithCollectionStatus.filter(pet => pet.isCollected);
+      collectedCount.textContent = collectedPets.length.toString();
+      
+      // 渲染宠兽列表
+      renderPetGrid(petsWithCollectionStatus);
+      
+      // 添加事件监听器
+      setupEventListeners();
+    }
+    
+    // 设置事件监听器
+    function setupEventListeners() {
+      // 搜索输入事件
+      searchInput.addEventListener('input', handleSearch);
+      
+      // 清除搜索按钮事件
+      clearSearchButton.addEventListener('click', () => {
+        searchInput.value = '';
+        searchQuery = '';
+        clearSearchButton.classList.add('hidden');
+        applyFilters();
+      });
+      
+      // 重置筛选按钮事件
+      resetFiltersButton.addEventListener('click', resetFilters);
+      mobileResetFiltersButton.addEventListener('click', resetFilters);
+      clearAllFiltersButton.addEventListener('click', resetFilters);
+      
+      // 返回按钮事件
+      document.getElementById('backButton').addEventListener('click', () => {
+        // 模拟导航回首页
+        alert('返回首页');
+      });
+    }
+    
+    // 处理搜索
+    function handleSearch(e) {
+      searchQuery = e.target.value.toLowerCase();
+      
+      // 显示/隐藏清除按钮
+      if (searchQuery) {
+        clearSearchButton.classList.remove('hidden');
+      } else {
+        clearSearchButton.classList.add('hidden');
+      }
+      
+      applyFilters();
+    }
+    
+    // 切换类型筛选
+    function toggleType(type) {
+      if (selectedTypes.includes(type)) {
+        selectedTypes = selectedTypes.filter(t => t !== type);
+      } else {
+        selectedTypes.push(type);
+      }
+      
+      updateFilterButtons();
+      applyFilters();
+    }
+    
+    // 切换稀有度筛选
+    function toggleRarity(rarity) {
+      if (selectedRarities.includes(rarity)) {
+        selectedRarities = selectedRarities.filter(r => r !== rarity);
+      } else {
+        selectedRarities.push(rarity);
+      }
+      
+      updateFilterButtons();
+      applyFilters();
+    }
+    
+    // 切换已收集筛选
+    function toggleCollectedFilter() {
+      const checkbox = document.getElementById('showCollectedOnly') || document.getElementById('mobileShowCollectedOnly');
+      showCollectedOnly = checkbox.checked;
+      
+      updateFilterButtons();
+      applyFilters();
+    }
+    
+    // 重置筛选条件
+    function resetFilters() {
+      searchQuery = '';
+      selectedTypes = [];
+      selectedRarities = [];
+      showCollectedOnly = false;
+      
+      // 重置UI
+      searchInput.value = '';
+      clearSearchButton.classList.add('hidden');
+      
+      const collectedCheckbox = document.getElementById('showCollectedOnly') || document.getElementById('mobileShowCollectedOnly');
+      if (collectedCheckbox) {
+        collectedCheckbox.checked = false;
+      }
+      
+      // 重置所有筛选按钮
+      updateFilterButtons();
+      
+      // 应用筛选
+      applyFilters();
+    }
+    
+    // 更新筛选按钮状态
+    function updateFilterButtons() {
+      // 清空活跃筛选标签
+      activeFilters.innerHTML = '';
+      
+      // 添加类型筛选标签
+      selectedTypes.forEach(type => {
+        const tag = document.createElement('span');
+        tag.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800';
+        tag.innerHTML = `
+          ${type}
+          <button 
+            onclick="toggleType('${type}')"
+            class="ml-1 inline-flex items-center text-blue-600 hover:text-blue-900"
+          >
+            <i class="fa-solid fa-times-circle text-xs"></i>
+          </button>
+        `;
+        activeFilters.appendChild(tag);
+      });
+      
+      // 添加稀有度筛选标签
+      selectedRarities.forEach(rarity => {
+        const rarityNames = {
+          common: '普通',
+          uncommon: '高级',
+          rare: '稀有',
+          epic: '史诗',
+          legendary: '传说',
+          special: '特殊'
+        };
+        
+        const tag = document.createElement('span');
+        tag.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800';
+        tag.innerHTML = `
+          ${rarityNames[rarity]}
+          <button 
+            onclick="toggleRarity('${rarity}')"
+            class="ml-1 inline-flex items-center text-gray-600 hover:text-gray-900"
+          >
+            <i class="fa-solid fa-times-circle text-xs"></i>
+          </button>
+        `;
+        activeFilters.appendChild(tag);
+      });
+      
+      // 添加已收集筛选标签
+      if (showCollectedOnly) {
+        const tag = document.createElement('span');
+        tag.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800';
+        tag.innerHTML = `
+          已收集
+          <button 
+            onclick="toggleCollectedFilter()"
+            class="ml-1 inline-flex items-center text-green-600 hover:text-green-900"
+          >
+            <i class="fa-solid fa-times-circle text-xs"></i>
+          </button>
+        `;
+        activeFilters.appendChild(tag);
+      }
+      
+      // 显示/隐藏清除全部按钮
+      if (selectedTypes.length > 0 || selectedRarities.length > 0 || showCollectedOnly) {
+        clearAllFiltersButton.classList.remove('hidden');
+      } else {
+        clearAllFiltersButton.classList.add('hidden');
+      }
+    }
+    
+    // 应用筛选条件
+    function applyFilters() {
+      // 模拟加载状态
+      petGrid.innerHTML = '<div class="col-span-full text-center py-12"><div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div></div>';
+      
+      setTimeout(() => {
+        let filteredPets = [...petData];
+        
+        // 应用搜索筛选
+        if (searchQuery) {
+          filteredPets = filteredPets.filter(pet => 
+            pet.name.toLowerCase().includes(searchQuery) || 
+            pet.description.toLowerCase().includes(searchQuery)
+          );
+        }
+        
+        // 应用类型筛选
+        if (selectedTypes.length > 0) {
+          filteredPets = filteredPets.filter(pet => 
+            pet.type.some(type => selectedTypes.includes(type))
+          );
+        }
+        
+        // 应用稀有度筛选
+        if (selectedRarities.length > 0) {
+          filteredPets = filteredPets.filter(pet => 
+            selectedRarities.includes(pet.rarity)
+          );
+        }
+        
+        // 应用已收集筛选
+        if (showCollectedOnly) {
+          // 模拟从本地存储获取已收集状态
+          const savedCollected = localStorage.getItem('collectedPets');
+          const collectedIds = savedCollected ? JSON.parse(savedCollected) : [];
+          
+          filteredPets = filteredPets.filter(pet => collectedIds.includes(pet.id));
+        }
+        
+        // 更新筛选计数
+        filteredCount.textContent = filteredPets.length.toString();
+        
+        // 渲染筛选后的宠兽列表
+        renderPetGrid(filteredPets);
+      }, 300);
+    }
+    
+    // 渲染宠兽网格
+    function renderPetGrid(pets) {
+      // 清空网格
+      petGrid.innerHTML = '';
+      
+      // 检查是否有宠兽
+      if (pets.length === 0) {
+        petGrid.innerHTML = `
+          <div class="col-span-full flex flex-col items-center justify-center py-16 text-center">
+            <div class="text-gray-500">Empty</div>
+            <h3 class="mt-4 text-lg font-medium text-gray-900">未找到匹配的宠兽</h3>
+            <p class="mt-2 text-gray-500 max-w-md">
+              尝试调整筛选条件或搜索其他关键词
+            </p>
+            <button
+              onclick="resetFilters()"
+              class="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              重置所有筛选条件
+            </button>
+          </div>
+        `;
+        return;
+      }
+      
+      // 渲染每个宠兽卡片
+      pets.forEach(pet => {
+        // 获取稀有度对应的颜色类
+        const getRarityColor = (rarity) => {
+          switch(rarity) {
+            case 'common': return 'bg-gray-300';
+            case 'uncommon': return 'bg-green-400';
+            case 'rare': return 'bg-blue-500';
+            case 'epic': return 'bg-purple-600';
+            case 'legendary': return 'bg-amber-500';
+            case 'special': return 'bg-pink-600';
+            default: return 'bg-gray-300';
+          }
+        };
+        
+        // 根据稀有度返回对应的文本颜色
+        const getRarityTextColor = (rarity) => {
+          return rarity === 'common' ? 'text-gray-800' : 'text-white';
+        };
+        
+        // 创建宠兽卡片
+        const card = document.createElement('div');
+        card.className = 'group relative bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer border border-gray-100';
+        card.onclick = () => {
+          // 模拟导航到宠兽详情页
+          alert(`查看 ${pet.name} 的详情`);
+        };
+        
+        // 卡片内容
+        card.innerHTML = `
+          <!-- 宠兽图片 -->
+          <div class="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
+            <img 
+              src="${pet.imageUrl}" 
+              alt="${pet.name}"
+              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            />
+          </div>
+          
+          <!-- 收藏标记 -->
+          ${pet.isCollected ? `
+            <div class="absolute top-3 right-3 bg-white/80 backdrop-blur-sm p-1.5 rounded-full shadow-sm">
+              <i class="fa-solid fa-star text-yellow-400"></i>
+            </div>
+          ` : ''}
+          
+          <!-- 稀有度标记 -->
+          <div class="absolute top-3 left-3 px-2 py-1 rounded-full text-xs font-bold ${getRarityColor(pet.rarity)} ${getRarityTextColor(pet.rarity)}">
+            ${pet.rarity === 'common' && '普通'}
+            ${pet.rarity === 'uncommon' && '高级'}
+            ${pet.rarity === 'rare' && '稀有'}
+            ${pet.rarity === 'epic' && '史诗'}
+            ${pet.rarity === 'legendary' && '传说'}
+            ${pet.rarity === 'special' && '特殊'}
+          </div>
+          
+          <!-- 宠兽信息 -->
+          <div class="p-4">
+            <h3 class="text-lg font-bold text-gray-900 mb-1 truncate">${pet.name}</h3>
+            
+            <!-- 类型标签 -->
+            <div class="flex flex-wrap gap-1.5 mb-3">
+              ${pet.type.map((type, index) => `
+                <span 
+                  key="${index}" 
+                  class="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded-full"
+                >
+                  ${type}
+                </span>
+              `).join('')}
+            </div>
+            
+            <!-- 属性简要展示 -->
+            <div class="grid grid-cols-3 gap-1 text-xs">
+              <div class="flex items-center gap-1">
+                <i class="fa-solid fa-bolt text-amber-500"></i>
+                <span class="font-medium">
+                  ${pet.attributes.strength}
+                </span>
+              </div>
+              <div class="flex items-center gap-1">
+                <i class="fa-solid fa-wind text-green-500"></i>
+                <span class="font-medium">
+                  ${pet.attributes.agility}
+                </span>
+              </div>
+              <div class="flex items-center gap-1">
+                <i class="fa-solid fa-shield text-blue-500"></i>
+                <span class="font-medium">
+                  ${pet.attributes.defense}
+                </span>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        // 添加到网格
+        petGrid.appendChild(card);
+      });
+    }
+    
+    // 切换筛选区块显示/隐藏
+    function toggleSection(sectionId) {
+      const section = document.getElementById(`${sectionId}Section`);
+      const icon = document.getElementById(`${sectionId}Icon`);
+      
+      if (section.classList.contains('hidden')) {
+        section.classList.remove('hidden');
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+      } else {
+        section.classList.add('hidden');
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+      }
+    }
+    
+    // 页面加载时初始化
+    document.addEventListener('DOMContentLoaded', initPage);
+  </script>
+</body>
+</html>
