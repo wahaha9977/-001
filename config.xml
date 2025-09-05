@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<widget 
+    id="com.petcollection.game" 
+    version="1.0.0" 
+    xmlns="http://www.w3.org/ns/widgets" 
+    xmlns:cdv="http://cordova.apache.org/ns/1.0"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <name>宠兽收集</name>
+    <description>探索奇妙的宠兽世界，收集、培养和战斗，成为最强训兽师！</description>
+    <author email="support@petcollection.com" href="https://petcollection.com">宠兽收集团队</author>
+    <content src="index.html" />
+    <access origin="*" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <platform name="android">
+        <allow-intent href="market:*" />
+        <icon src="https://space.coze.cn/api/coze_space/gen_image?image_size=square_hd&prompt=Pet%20collection%20logo%2C%20cartoon%20style%2C%20vibrant%20colors&sign=7756711ac6fac48e32fb27787a414a86" density="ldpi" />
+        <icon src="https://space.coze.cn/api/coze_space/gen_image?image_size=square_hd&prompt=Pet%20collection%20logo%2C%20cartoon%20style%2C%20vibrant%20colors&sign=7756711ac6fac48e32fb27787a414a86" density="mdpi" />
+        <icon src="https://space.coze.cn/api/coze_space/gen_image?image_size=square_hd&prompt=Pet%20collection%20logo%2C%20cartoon%20style%2C%20vibrant%20colors&sign=7756711ac6fac48e32fb27787a414a86" density="hdpi" />
+        <icon src="https://space.coze.cn/api/coze_space/gen_image?image_size=square_hd&prompt=Pet%20collection%20logo%2C%20cartoon%20style%2C%20vibrant%20colors&sign=7756711ac6fac48e32fb27787a414a86" density="xhdpi" />
+    </platform>
+    <platform name="ios">
+        <allow-intent href="itms:*" />
+        <allow-intent href="itms-apps:*" />
+        <icon src="https://space.coze.cn/api/coze_space/gen_image?image_size=square_hd&prompt=Pet%20collection%20logo%2C%20cartoon%20style%2C%20vibrant%20colors&sign=7756711ac6fac48e32fb27787a414a86" width="57" height="57" />
+        <icon src="https://space.coze.cn/api/coze_space/gen_image?image_size=square_hd&prompt=Pet%20collection%20logo%2C%20cartoon%20style%2C%20vibrant%20colors&sign=7756711ac6fac48e32fb27787a414a86" width="72" height="72" />
+        <icon src="https://space.coze.cn/api/coze_space/gen_image?image_size=square_hd&prompt=Pet%20collection%20logo%2C%20cartoon%20style%2C%20vibrant%20colors&sign=7756711ac6fac48e32fb27787a414a86" width="120" height="120" />
+    </platform>
+    <preference name="orientation" value="portrait" />
+    <preference name="DisallowOverscroll" value="true" />
+    <preference name="BackgroundColor" value="#ffffff" />
+    <preference name="Fullscreen" value="false" />
+</widget>
